@@ -22,8 +22,8 @@ class Lexer:
     def __init__(self, phrase):
         # A default dictionary of regex phrases
         self.token_codes = {
-            "DIV":          r"[/]",
-            "ID":           r"[a-zA-Z][a-zA-Z0-9]*", 
+            "DIV":          r"div",
+            "ID":           r"[a-zA-Z_][a-zA-Z0-9]*", 
             "INTEGER":      r"\d+",
             "LPAREN":       r"[(]",
             "MINUS":        r"[-]",
@@ -82,7 +82,7 @@ class Lexer:
 
         if matching_group == 'ID':
             # Check if standard keyword
-            token = RESERVED_KEYWORDS.get(match_value, Token(matching_group, match_value))
+            token = RESERVED_KEYWORDS.get(match_value.upper(), Token(matching_group, match_value))
         elif match_value.isdigit():
             # Integers stored as int rather than string
             token = Token(matching_group, int(match_value))
@@ -368,7 +368,7 @@ class Interpreter(NodeVisitor):
         self.GLOBAL_SCOPE = {}
 
     def visitor_Assign(self, node):
-        var_name = node.left.value
+        var_name = node.left.value.upper()
         self.GLOBAL_SCOPE[var_name] = self.visit(node.right)
 
     def visitor_BinOp(self, node):
@@ -403,7 +403,7 @@ class Interpreter(NodeVisitor):
 
     def visitor_Var(self, node):
         var_name = node.value
-        val = self.GLOBAL_SCOPE.get(var_name)
+        val = self.GLOBAL_SCOPE.get(var_name.upper())
         if val is None:
             raise NameError(repr(var_name))
         else:
@@ -432,10 +432,10 @@ if __name__ == "__main__":
 
                 BEGIN
                     number := 2;
-                    a := number;
-                    b := 10 * a + 10 * number / 4;
+                    a := NumBer;
+                    B := 10 * a + 10 * NUMBER div 4;
                     c := a - - b
-                END;
+                end;
 
                 x := 11;
             END."""
@@ -451,9 +451,9 @@ if __name__ == "__main__":
 """
             BEGIN 
                 BEGIN 
-                    number:=2; 
-                    a:=number; 
-                    b := 10*a + 10*number / 4; 
+                    _number:=2; 
+                    a:=_number; 
+                    b := 10*a + 10*_number / 4; 
                     c := a - - b; 
                 END;  
                 x:= 11; 
