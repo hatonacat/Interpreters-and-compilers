@@ -9,7 +9,7 @@ vpath %.cpp $(SRC_DIR)
 vpath %.h $(INC_DIR)
 
 MAIN_NAME = main
-SRC_FILES = interpreter.cpp lexer.cpp parser.cpp token.cpp
+SRC_FILES = interpreter.cpp lexer.cpp parser.cpp token.cpp ast_visitor.cpp
 OBJ_FILES = $(SRC_FILES:%.cpp=$(OBJ_DIR)/%.o)
 
 EXECUTABLE_NAME = main

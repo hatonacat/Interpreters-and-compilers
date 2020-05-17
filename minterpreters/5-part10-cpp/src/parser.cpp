@@ -1,3 +1,4 @@
+#include "ast_visitor.h"
 #include "lexer.h"
 #include "parser.h"
 #include "token.h"
@@ -10,10 +11,7 @@ AST* Parser::parse() {
     Token token;
 
     AST* node = term();
-    // while (token.get_type() != "EOF") {
-    //     token = lexer->get_next_token();
-    //     std::cout << token << std::endl;
-    // }
+
     return node;
 }
 
@@ -55,7 +53,7 @@ AST* Parser::term() {
         eat("DIV");
     }
 
-    AST* binop_node = new BinOp_node(node, op, factor());
+    AST* binop_node = new BinOpNode(node, op, factor());
 
     return binop_node;
 }
@@ -69,12 +67,12 @@ AST* Parser::factor() {
 
     if (token.get_type() == "INTEGER") {
         int token_value = std::stoi(token.get_value());
-        node = new Integer_node(token_value);
+        node = new IntegerNode(token_value);
         eat("INTEGER");
     } 
     else if (token.get_type() == "REAL") {
         float token_value = std::stof(token.get_value());
-        node = new Real_node(token_value);
+        node = new RealNode(token_value);
         eat("REAL");
     }
     else {
@@ -84,12 +82,3 @@ AST* Parser::factor() {
     return node;   
 }
 
-
-/*
- * AST NODES
- */
-BinOp_node::BinOp_node(AST* init_left, Token init_op, AST* init_right) {
-    left = init_left;
-    op = init_op;
-    right = init_right;
-}

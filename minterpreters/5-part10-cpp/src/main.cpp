@@ -1,6 +1,7 @@
 #include <iostream>
 #include <string>
 
+#include "interpreter.h"
 #include "lexer.h"
 #include "parser.h"
 
@@ -10,6 +11,7 @@ int main() {
 
     Lexer lexer(my_code);
     Parser parser(&lexer);
+    Interpreter interpreter(&parser);
 
-    AST* head_node = parser.parse();
+    interpreter.interpret();
 }

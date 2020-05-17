@@ -7,7 +7,6 @@
 
 #include <string>
 #include <iostream>
-#include "token.h"
 
 class Token {
     public:
