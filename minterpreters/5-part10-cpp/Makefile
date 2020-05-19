@@ -7,10 +7,10 @@ SRC_DIR = ./src
 
 vpath %.cpp $(SRC_DIR) 
 vpath %.h $(INC_DIR)
+vpath %.o $(OBJ_DIR)
 
-MAIN_NAME = main
-SRC_FILES = interpreter.cpp lexer.cpp parser.cpp token.cpp ast_visitor.cpp
-OBJ_FILES = $(SRC_FILES:%.cpp=$(OBJ_DIR)/%.o)
+SRC_FILES = ast_visitor.cpp interpreter.cpp lexer.cpp parser.cpp token.cpp main.cpp
+OBJ_FILES = $(SRC_FILES:%.cpp=%.o)
 
 EXECUTABLE_NAME = main
 EXECUTABLE = $(BIN_DIR)/$(EXECUTABLE_NAME)
@@ -19,20 +19,26 @@ CFLAGS = -I$(INC_DIR)
 
 #=================================================
 
-$(EXECUTABLE): $(OBJ_FILES) $(OBJ_DIR)/$(MAIN_NAME).o
-	$(CC) $^ -o $(EXECUTABLE) 
+$(EXECUTABLE): $(OBJ_FILES)
+	$(CC) -o $(EXECUTABLE) $(addprefix $(OBJ_DIR)/,$(OBJ_FILES))
 
-# The [main].cpp file won't have an associated .h file so is done separately.
-$(OBJ_DIR)/$(MAIN_NAME).o: $(SRC_DIR)/$(MAIN_NAME).cpp $(INC_DIR)/lexer.h | $(OBJ_DIR)
-	$(CC) -c $< -o $@ -I./inc
+main.o: main.cpp interpreter.h lexer.h parser.h | $(OBJ_DIR)
+	$(CC) -c $(SRC_DIR)/main.cpp -o $(OBJ_DIR)/main.o $(CFLAGS)
 
-# Lexer depends on token
-$(OBJ_DIR)/lexer.o: $(SRC_DIR)/lexer.cpp $(INC_DIR)/lexer.h $(SRC_DIR)/token.cpp | $(OBJ_DIR)
-	$(CC) -c $< -o $@ -I./inc
+ast_visitor.o: ast_visitor.cpp token.h | $(OBJ_DIR)
+	$(CC) -c $(SRC_DIR)/ast_visitor.cpp -o $(OBJ_DIR)/$@ $(CFLAGS)
 
-# All remaining object files
-$(OBJ_DIR)/%.o: $(SRC_DIR)/%.cpp $(INC_DIR)/%.h | $(OBJ_DIR)
-	$(CC) -c $< -o $@ $(CFLAGS)
+interpreter.o: interpreter.cpp ast_visitor.h parser.h token.h | $(OBJ_DIR)
+	$(CC) -c $(SRC_DIR)/interpreter.cpp -o $(OBJ_DIR)/$@ $(CFLAGS)	
+
+lexer.o: lexer.cpp token.h | $(OBJ_DIR)
+	$(CC) -c $(SRC_DIR)/lexer.cpp -o $(OBJ_DIR)/$@ $(CFLAGS)	
+
+parser.o: parser.cpp ast_visitor.h lexer.h token.h | $(OBJ_DIR)
+	$(CC) -c $(SRC_DIR)/parser.cpp -o $(OBJ_DIR)/$@ $(CFLAGS)	
+
+token.o: token.cpp | $(OBJ_DIR)
+	$(CC) -c $(SRC_DIR)/token.cpp -o $(OBJ_DIR)/$@ $(CFLAGS)	
 
 $(OBJ_DIR):
 	mkdir $(OBJ_DIR)

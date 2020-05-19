@@ -7,15 +7,20 @@
 #ifndef LEXER_H
 #define LEXER_H
 
-#include <string>
 #include <map>
+#include <unordered_map>
+#include <string>
+#include <set>
 
 #include "token.h"
 
 class Lexer {
     public:
+        Lexer() = default;
         Lexer(std::string user_code="");
         ~Lexer() {};
+
+        std::string protected_check(std::string match_result);
 
         std::string get_code();
         void set_code(std::string init_code) {code = init_code;};
@@ -30,8 +35,9 @@ class Lexer {
     private:
         std::string code;   // The code to tokenise
         int pos;            // Lexer position in code
-        std::map<std::string, std::string> regex_expressions; 
+        std::map<std::string, std::string> regex_expressions;
         Token current_token;
+        std::unordered_map<std::string, std::string> protected_terms;
 
         // Convert from regex match to a token
         Token tokenise();

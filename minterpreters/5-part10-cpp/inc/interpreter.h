@@ -11,7 +11,7 @@ class Parser;
 
 class Interpreter {
     public:
-        Interpreter(Parser *init_parser);
+        Interpreter(std::string user_code);
         ~Interpreter() {};
 
         void interpret();
@@ -19,7 +19,9 @@ class Interpreter {
 
     private:
         Parser *parser;
-
+        std::map<std::string, int> integers;
+        std::map<std::string, float> floats;
+        std::map<std::string, std::string> strings;
 };
 
 #endif

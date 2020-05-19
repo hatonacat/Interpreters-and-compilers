@@ -3,14 +3,15 @@
 #include "parser.h"
 #include "token.h"
 
-Parser::Parser(Lexer *init_lexer) {
-    lexer = init_lexer;
+Parser::Parser(std::string user_code) {
+    lexer = new Lexer(user_code);
 }
 
-AST* Parser::parse() {
-    Token token;
+Parser::~Parser() {};
 
-    AST* node = term();
+AST* Parser::parse() {
+    Token token = lexer->get_current_token();
+    AST* node = assign_op();
 
     return node;
 }
@@ -32,7 +33,7 @@ void Parser::eat(std::string token_type) {
     }
     else {
         parsing_error("Failed eat request, got: "+ current_token_type + 
-                      "expected: " + token_type);
+                      " expected: " + token_type);
     }
 }
 
@@ -40,11 +41,32 @@ void Parser::eat(std::string token_type) {
 * GRAMMARS
 */
 
+AST* Parser::assign_op() {
+    /*
+    * TYPE VARIABLE EQUALS EXPR
+    */
+    Token type_token = lexer->get_current_token();
+    AST* type_node = new Variable(type_token);
+    eat("INT_TYPE");
+
+    Token var_token = lexer->get_current_token();
+    AST* var_node = new Variable(var_token);
+    eat("VARIABLE");
+
+    eat("EQUALS");
+
+    AST* value_node = term();
+
+    AST* assign_node = new AssignNode(type_node, var_node, value_node);
+    return assign_node;
+}
+
 AST* Parser::term() {
     /*
      * FACTOR ((MUL|DIV) FACTIR)*
      */
     AST* node = factor();
+
     Token op = lexer->get_current_token();
     if (op.get_type()=="MUL") {
         eat("MUL");
@@ -66,6 +88,7 @@ AST* Parser::factor() {
     AST* node;
 
     if (token.get_type() == "INTEGER") {
+        std::cout << "Token is: " << token << std::endl;
         int token_value = std::stoi(token.get_value());
         node = new IntegerNode(token_value);
         eat("INTEGER");
