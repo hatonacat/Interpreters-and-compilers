@@ -19,6 +19,8 @@ Lexer::Lexer(std::string user_code) {
         {R"(\s+)", "WHITESPACE"},
     };
     protected_terms = {
+        {"Begin", "BEGIN"},
+        {"End", "END"},
         {"int", "INT_TYPE"},
     };
     current_token = get_next_token();
@@ -39,7 +41,6 @@ std::string Lexer::get_code() {
 
 std::string Lexer::protected_check(std::string matching_phrase) {
     // Returns the protected values if found, otherwise reutnrs "Not protected"
-    std::cout << "Checking: " << matching_phrase << std::endl;
     auto protected_lookup = protected_terms.find(matching_phrase);
     if (protected_lookup == protected_terms.end()) {
         return "Not protected";

@@ -28,6 +28,7 @@ class Parser {
         * GRAMMARS
         */
         void eat(std::string);
+        AST* compound_statement();
         AST* assign_op();
         AST* term();
         AST* factor();

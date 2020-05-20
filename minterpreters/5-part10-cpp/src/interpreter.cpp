@@ -14,5 +14,7 @@ void Interpreter::interpret() {
     NodeVisitor top_visitor;
     tree_head_node->accept(top_visitor);
     std::cout << "\nInterpreting complete\n" << std::endl;
+        
+    top_visitor.print_integers();
 }
 

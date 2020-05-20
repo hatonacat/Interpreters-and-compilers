@@ -11,7 +11,7 @@ Parser::~Parser() {};
 
 AST* Parser::parse() {
     Token token = lexer->get_current_token();
-    AST* node = assign_op();
+    AST* node = compound_statement();
 
     return node;
 }
@@ -41,16 +41,30 @@ void Parser::eat(std::string token_type) {
 * GRAMMARS
 */
 
+AST* Parser::compound_statement() {
+    /*
+     * BEGIN ASSIGN_OP END
+    */
+    eat("BEGIN");
+
+    AST* node;
+    node = assign_op();
+
+    eat("END");
+    return node;
+
+}
+
 AST* Parser::assign_op() {
     /*
     * TYPE VARIABLE EQUALS EXPR
     */
     Token type_token = lexer->get_current_token();
-    AST* type_node = new Variable(type_token);
+    AST* type_node = new VariableNode(type_token);
     eat("INT_TYPE");
 
     Token var_token = lexer->get_current_token();
-    AST* var_node = new Variable(var_token);
+    AST* var_node = new VariableNode(var_token);
     eat("VARIABLE");
 
     eat("EQUALS");

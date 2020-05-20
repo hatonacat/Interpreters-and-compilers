@@ -10,6 +10,22 @@
 #include "token.h"
 
 /**
+ * AST Data structures
+**/
+class Variable {
+    public:
+        Variable(std::string init_var_name, int init_value);
+        ~Variable() {};
+
+        std::string get_name() {return var_name;};
+        int get_value() {return value;};
+    
+    private:
+        std::string var_name;
+        int value;
+};
+
+/**
  * AST NODES
 **/
 
@@ -36,13 +52,25 @@ class AssignNode: public AST {
         AST* value;
 };
 
-class Variable: public AST {
+// class BeginNode: public AST {
+//     public:
+//         BeginNode(Token init_token) {token = init_token; type = init_token.get_type();};
+//         ~BeginNode() {};
+
+//     private:
+//         Token token;
+//         std::string type;
+// };
+
+class VariableNode: public AST {
     public:
-        Variable() {};
-        Variable(Token init_token);
-        ~Variable() {};
+        VariableNode() {};
+        VariableNode(Token init_token);
+        ~VariableNode() {};
 
         void accept(Visitor &v);
+
+        std::string get_name() {return name;};
 
     private:
         Token token;
@@ -99,27 +127,45 @@ class RealNode :public AST{
  * Visitor design pattern
 **/
 class Visitor {
-    public:
-        virtual void visit(AssignNode *e)=0;
-        virtual void visit(Variable *e)=0;
-        virtual void visit(BinOpNode *e)=0;
-        virtual int visit(IntegerNode *e)=0;
-        virtual void visit(RealNode *e)=0;
-};  
-
-class NodeVisitor : public Visitor {
     private:
-        void visit(AssignNode *e);
-        void visit(Variable *e);
-        void visit(BinOpNode *e);
-        int visit(IntegerNode *e);
-        void visit(RealNode *e);
-
-    public:
         std::map<std::string, int> integers;
         std::map<std::string, float> floats;
         std::map<std::string, std::string> strings;
         int running_integer;
+        std::string running_var;
+
+    public:
+        virtual Variable visit(AssignNode *e)=0;
+        virtual std::string visit(VariableNode *e)=0;
+        virtual int visit(BinOpNode *e)=0;
+        virtual int visit(IntegerNode *e)=0;
+        virtual void visit(RealNode *e)=0;
+
+        void set_running_integer(int value) {running_integer = value;};
+        int get_running_integer() {return running_integer;};
+
+        void set_running_var(std::string var) {running_var = var;};
+        std::string get_running_var() {return running_var;};
+
+        void add_integer(Variable new_var);
+        void add_integer(std::string var_name, int value);
+
+        void print_integers() {
+            std::cout << "Printing map:" << std::endl;
+            for (auto it: integers) {
+                std::cout << "Quack" << std::endl;
+                std::cout << it.first << " = " << it.second << std::endl;
+            }
+        }
+};  
+
+class NodeVisitor : public Visitor {
+    private:
+        Variable visit(AssignNode *e);
+        std::string visit(VariableNode *e);
+        int visit(BinOpNode *e);
+        int visit(IntegerNode *e);
+        void visit(RealNode *e);
 };
 
 #endif
