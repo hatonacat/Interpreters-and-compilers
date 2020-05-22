@@ -6,6 +6,7 @@
 #define AST_H
 
 #include <map>
+#include <memory>
 
 #include "token.h"
 
@@ -14,14 +15,16 @@
 **/
 class Variable {
     public:
-        Variable(std::string init_var_name, int init_value);
+        Variable(std::string init_type, std::string init_name, int init_value);
         ~Variable() {};
 
-        std::string get_name() {return var_name;};
+        std::string get_type() {return type;};
+        std::string get_name() {return name;};
         int get_value() {return value;};
     
     private:
-        std::string var_name;
+        std::string type;
+        std::string name;
         int value;
 };
 
@@ -36,31 +39,34 @@ class AST {
 
 class AssignNode: public AST {
     public:
-        AssignNode() {};
-        AssignNode(AST* init_type, AST* init_variable, AST* init_value);
+        AssignNode(std::shared_ptr<AST> init_type, std::shared_ptr<AST> init_variable, std::shared_ptr<AST> init_value);
         ~AssignNode() {};
 
         void accept(Visitor &v);
 
-        AST* get_type() {return type;};
-        AST* get_variable() {return variable;};
-        AST* get_value() {return value;};
+        std::shared_ptr<AST> get_type() {return type_node;};
+        std::shared_ptr<AST> get_variable() {return variable_node;};
+        std::shared_ptr<AST> get_value() {return value_node;};
 
     private:
-        AST* type;
-        AST* variable;
-        AST* value;
+        std::shared_ptr<AST> type_node;
+        std::shared_ptr<AST> variable_node;
+        std::shared_ptr<AST> value_node;
 };
 
-// class BeginNode: public AST {
-//     public:
-//         BeginNode(Token init_token) {token = init_token; type = init_token.get_type();};
-//         ~BeginNode() {};
+class TypeNode: public AST {
+    public:
+        TypeNode() {};
+        TypeNode(std::string init_type);
+        ~TypeNode() {};
 
-//     private:
-//         Token token;
-//         std::string type;
-// };
+        void accept(Visitor &v);
+
+        std::string get_type() {return type;};
+
+    private:
+        std::string type;
+};
 
 class VariableNode: public AST {
     public:
@@ -136,10 +142,11 @@ class Visitor {
 
     public:
         virtual Variable visit(AssignNode *e)=0;
+        virtual std::string visit(TypeNode *e)=0;
         virtual std::string visit(VariableNode *e)=0;
         virtual int visit(BinOpNode *e)=0;
         virtual int visit(IntegerNode *e)=0;
-        virtual void visit(RealNode *e)=0;
+        virtual float visit(RealNode *e)=0;
 
         void set_running_integer(int value) {running_integer = value;};
         int get_running_integer() {return running_integer;};
@@ -162,10 +169,11 @@ class Visitor {
 class NodeVisitor : public Visitor {
     private:
         Variable visit(AssignNode *e);
+        std::string visit(TypeNode *e);
         std::string visit(VariableNode *e);
         int visit(BinOpNode *e);
         int visit(IntegerNode *e);
-        void visit(RealNode *e);
+        float visit(RealNode *e);
 };
 
 #endif

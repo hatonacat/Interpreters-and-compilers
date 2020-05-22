@@ -10,7 +10,7 @@ int main() {
         Begin
             int a = 1*2
         End)";
-    std::cout << "Input code: \"" << user_code << "\"" << std::endl;
+    std::cout << "Input code: \"" << user_code << "\"\n" << std::endl;
 
     Interpreter interpreter(user_code);
     interpreter.interpret();

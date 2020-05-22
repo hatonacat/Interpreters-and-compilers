@@ -1,3 +1,5 @@
+#include <utility>
+
 #include "ast_visitor.h"
 #include "lexer.h"
 #include "parser.h"
@@ -60,16 +62,17 @@ AST* Parser::assign_op() {
     * TYPE VARIABLE EQUALS EXPR
     */
     Token type_token = lexer->get_current_token();
-    AST* type_node = new VariableNode(type_token);
+    //std::shared_ptr<AST> type_node (new TypeNode( type_token.get_type() ));
+    std::shared_ptr<AST> type_node = std::make_shared<TypeNode>(type_token.get_type());
     eat("INT_TYPE");
 
     Token var_token = lexer->get_current_token();
-    AST* var_node = new VariableNode(var_token);
+    std::shared_ptr<AST> var_node (new VariableNode(var_token));
     eat("VARIABLE");
 
     eat("EQUALS");
 
-    AST* value_node = term();
+    std::shared_ptr<AST> value_node (term());
 
     AST* assign_node = new AssignNode(type_node, var_node, value_node);
     return assign_node;
