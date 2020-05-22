@@ -18,20 +18,20 @@ class Parser {
         ~Parser();
 
         // Convert Token stream into AST and return pointer to head
-        AST* parse();
+        std::shared_ptr<AST> parse();
         void parsing_error(std::string err_message);
 
     private:
-        Lexer *lexer;
+        std::unique_ptr<Lexer> lexer;
 
         /*
         * GRAMMARS
         */
         void eat(std::string);
-        AST* compound_statement();
-        AST* assign_op();
-        AST* term();
-        AST* factor();
+        std::shared_ptr<AST> compound_statement();
+        std::shared_ptr<AST> assign_op();
+        std::shared_ptr<AST> term();
+        std::shared_ptr<AST> factor();
 };
 
 #endif

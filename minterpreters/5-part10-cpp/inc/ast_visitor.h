@@ -85,18 +85,18 @@ class VariableNode: public AST {
 
 class BinOpNode : public AST {
     public:
-        BinOpNode(AST* init_left, Token init_op, AST* init_right);
+        BinOpNode(std::shared_ptr<AST> init_left, Token init_op, std::shared_ptr<AST> init_right);
 
         void accept(Visitor &v);
     
-        AST *get_left() {return left;};
+        std::shared_ptr<AST> get_left() {return left;};
         Token get_op() {return op;};
-        AST *get_right() {return right;};
+        std::shared_ptr<AST> get_right() {return right;};
 
     private:
-        AST* left;
+        std::shared_ptr<AST> left;
         Token op;
-        AST* right;
+        std::shared_ptr<AST> right;
 };
 
 class IntegerNode :public AST {

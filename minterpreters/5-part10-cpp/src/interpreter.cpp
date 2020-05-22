@@ -7,7 +7,7 @@ Interpreter::Interpreter(std::string user_code) {
 }
 
 void Interpreter::interpret() {
-    AST* tree_head_node = parser->parse();
+    std::shared_ptr<AST> tree_head_node = parser->parse();
     std::cout << "\nParsing complete\n" << std::endl;
 
     // We want this visitor to return a map of variables

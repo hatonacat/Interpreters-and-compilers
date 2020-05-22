@@ -19,7 +19,7 @@ VariableNode::VariableNode(Token init_token) {
     name = init_token.get_value();
 }
 
-BinOpNode::BinOpNode(AST* init_left, Token init_op, AST* init_right) {
+BinOpNode::BinOpNode(std::shared_ptr<AST> init_left, Token init_op, std::shared_ptr<AST> init_right) {
     left = init_left;
     op = init_op;
     right = init_right;
@@ -104,11 +104,11 @@ int NodeVisitor::visit(BinOpNode *node) {
     std::cout << "Visiting binop" << std::endl;
     NodeVisitor visitor;
 
-    AST *left_node = node->get_left();
+    std::shared_ptr<AST> left_node = node->get_left();
     left_node->accept(visitor);
     int left = visitor.get_running_integer();
 
-    AST *right_node = node->get_right();
+    std::shared_ptr<AST> right_node = node->get_right();
     right_node->accept(visitor);
     int right = visitor.get_running_integer();
 
