@@ -134,19 +134,23 @@ class RealNode :public AST{
 **/
 class Visitor {
     private:
-        std::map<std::string, int> integers;
-        std::map<std::string, float> floats;
-        std::map<std::string, std::string> strings;
+        std::map<std::string, int> integer_map;
+        std::map<std::string, float> float_map;
+        std::map<std::string, std::string> string_map;
         int running_integer;
         std::string running_var;
 
     public:
-        virtual Variable visit(AssignNode *e)=0;
-        virtual std::string visit(TypeNode *e)=0;
-        virtual std::string visit(VariableNode *e)=0;
-        virtual int visit(BinOpNode *e)=0;
-        virtual int visit(IntegerNode *e)=0;
-        virtual float visit(RealNode *e)=0;
+        virtual void visit(AssignNode *e)=0;
+        virtual void visit(TypeNode *e)=0;
+        virtual void visit(VariableNode *e)=0;
+        virtual void visit(BinOpNode *e)=0;
+        virtual void visit(IntegerNode *e)=0;
+        virtual void visit(RealNode *e)=0;
+
+        auto get_integer_map() {return &integer_map;};
+        auto get_float_map() {return &float_map;};
+        auto get_string_map() {return &string_map;};
 
         void set_running_integer(int value) {running_integer = value;};
         int get_running_integer() {return running_integer;};
@@ -156,24 +160,16 @@ class Visitor {
 
         void add_integer(Variable new_var);
         void add_integer(std::string var_name, int value);
-
-        void print_integers() {
-            std::cout << "Printing map:" << std::endl;
-            for (auto it: integers) {
-                std::cout << "Quack" << std::endl;
-                std::cout << it.first << " = " << it.second << std::endl;
-            }
-        }
 };  
 
 class NodeVisitor : public Visitor {
     private:
-        Variable visit(AssignNode *e);
-        std::string visit(TypeNode *e);
-        std::string visit(VariableNode *e);
-        int visit(BinOpNode *e);
-        int visit(IntegerNode *e);
-        float visit(RealNode *e);
+        void visit(AssignNode *e);
+        void visit(TypeNode *e);
+        void visit(VariableNode *e);
+        void visit(BinOpNode *e);
+        void visit(IntegerNode *e);
+        void visit(RealNode *e);
 };
 
 #endif

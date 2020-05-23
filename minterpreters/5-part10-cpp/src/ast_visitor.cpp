@@ -30,28 +30,23 @@ BinOpNode::BinOpNode(std::shared_ptr<AST> init_left, Token init_op, std::shared_
 **/
 
 void AssignNode::accept(Visitor &v) {
-    Variable new_var = v.visit(this);
-    v.add_integer(new_var);
+    v.visit(this);
 }
 
 void TypeNode::accept(Visitor &v) {
-    std::string var_type = v.visit(this);
-    v.set_running_var(var_type);    
+    v.visit(this);   
 }
 
 void VariableNode::accept(Visitor &v) {
-    std::string var_name = v.visit(this);
-    v.set_running_var(var_name);
+    v.visit(this);
 }
 
 void BinOpNode::accept(Visitor &v) {
-    int value = v.visit(this);
-    v.set_running_integer(value);
+    v.visit(this);
 }
 
 void IntegerNode::accept(Visitor &v) {
-    int value = v.visit(this);
-    v.set_running_integer(value);
+    v.visit(this);
 }
 
 void RealNode::accept(Visitor &v) {
@@ -62,55 +57,62 @@ void RealNode::accept(Visitor &v) {
  * Visitor design pattern
 **/
 void Visitor::add_integer(Variable var) {
-    integers.insert(std::pair<std::string, int>(var.get_name(), var.get_value()));
+    integer_map.insert(std::pair<std::string, int>(var.get_name(), var.get_value()));
 }
 
 void Visitor::add_integer(std::string var_name, int value) {
-    integers.insert(std::pair<std::string, int>(var_name, value));
+    integer_map.insert(std::pair<std::string, int>(var_name, value));
 }
 
-Variable NodeVisitor::visit(AssignNode *node) {
+// void Visitor::print_integers() {
+//     std::cout << "Printing map:" << std::endl;
+//     for (auto it: integers) {
+//         std::cout << it.first << " = " << it.second << std::endl;
+//     }
+// }
+
+void NodeVisitor::visit(AssignNode *node) {
     std::cout << "Visiting assign" << std::endl;
-    NodeVisitor visitor;    
 
     std::shared_ptr<AST> type_node = node->get_type();
-    type_node->accept(visitor);
-    std::string type = visitor.get_running_var();
+    type_node->accept(*this);
+    std::string type = get_running_var();
 
     std::shared_ptr<AST> var_node = node->get_variable();
-    var_node->accept(visitor);
-    std::string name = visitor.get_running_var();    
+    var_node->accept(*this);
+    std::string name = get_running_var();    
 
     std::shared_ptr<AST> value_node = node->get_value();
-    value_node->accept(visitor);
-    int value = visitor.get_running_integer();
+    value_node->accept(*this);
+    int value = get_running_integer();
 
-    return Variable(type, name, value);
+    add_integer(Variable(type, name, value));
 };
 
-std::string NodeVisitor::visit(TypeNode *node) {
+void NodeVisitor::visit(TypeNode *node) {
     std::cout << "Visiting Type" << std::endl;
     std::string var_type = node->get_type();
-    return var_type;
+
+    set_running_var(var_type); 
 };
 
-std::string NodeVisitor::visit(VariableNode *node) {
+void NodeVisitor::visit(VariableNode *node) {
     std::cout << "Visiting variable" << std::endl;
     std::string var_name = node->get_name();
-    return var_name;
+
+    set_running_var(var_name);
 };
 
-int NodeVisitor::visit(BinOpNode *node) {
+void NodeVisitor::visit(BinOpNode *node) {
     std::cout << "Visiting binop" << std::endl;
-    NodeVisitor visitor;
 
     std::shared_ptr<AST> left_node = node->get_left();
-    left_node->accept(visitor);
-    int left = visitor.get_running_integer();
+    left_node->accept(*this);
+    int left = get_running_integer();
 
     std::shared_ptr<AST> right_node = node->get_right();
-    right_node->accept(visitor);
-    int right = visitor.get_running_integer();
+    right_node->accept(*this);
+    int right = get_running_integer();
 
     int total;
     if (node->get_op().get_type() == "MUL") {
@@ -120,23 +122,23 @@ int NodeVisitor::visit(BinOpNode *node) {
         std::cout << "No valid binary operation found" << std::endl;
     }
 
-    return total;
+    set_running_integer(total);
 };
 
-int NodeVisitor::visit(IntegerNode *node) {
+void NodeVisitor::visit(IntegerNode *node) {
     std::cout << "Visiting integer" << std::endl;
     int value = node->get_value();
     std::cout << "Integer value: " << value << std::endl;  
       
-    return value;
+    set_running_integer(value);
 };
 
-float NodeVisitor::visit(RealNode *node) {
+void NodeVisitor::visit(RealNode *node) {
     std::cout << "Visiting real" << std::endl;
     float value = node->get_value();
     std::cout << node->get_value() << std::endl;
 
-    return value;
+    //return value;
 };
 
 Variable::Variable(std::string init_type, std::string init_name, int init_value) {
