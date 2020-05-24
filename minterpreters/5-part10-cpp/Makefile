@@ -31,7 +31,7 @@ ast_visitor.o: ast_visitor.cpp token.h | $(OBJ_DIR)
 interpreter.o: interpreter.cpp ast_visitor.h parser.h token.h | $(OBJ_DIR)
 	$(CC) -c $(SRC_DIR)/interpreter.cpp -o $(OBJ_DIR)/$@ $(CFLAGS)	
 
-lexer.o: lexer.cpp token.h | $(OBJ_DIR)
+lexer.o: lexer.cpp token.h utils.h | $(OBJ_DIR)
 	$(CC) -c $(SRC_DIR)/lexer.cpp -o $(OBJ_DIR)/$@ $(CFLAGS)	
 
 parser.o: parser.cpp ast_visitor.h lexer.h token.h | $(OBJ_DIR)

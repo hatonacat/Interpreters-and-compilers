@@ -38,10 +38,10 @@ class AST {
         virtual void accept(class Visitor &v) = 0;
 };
 
-class BlockNode: public AST {
+class CompoundNode: public AST {
     public:
-        BlockNode() {};
-        ~BlockNode() {};
+        CompoundNode() {};
+        ~CompoundNode() {};
 
         void accept(Visitor &v);
 
@@ -165,7 +165,7 @@ class Visitor {
         std::string running_var;
 
     public:
-        virtual void visit(BlockNode *e)=0;
+        virtual void visit(CompoundNode *e)=0;
         virtual void visit(AssignNode *e)=0;
         virtual void visit(TypeNode *e)=0;
         virtual void visit(VariableNode *e)=0;
@@ -190,7 +190,7 @@ class Visitor {
 
 class NodeVisitor : public Visitor {
     private:
-        void visit(BlockNode *e);
+        void visit(CompoundNode *e);
         void visit(AssignNode *e);
         void visit(TypeNode *e);
         void visit(VariableNode *e);

@@ -4,7 +4,7 @@
  * AST structure and nodes
 **/
 
-void BlockNode::add_statement(std::shared_ptr<AST> statement) {
+void CompoundNode::add_statement(std::shared_ptr<AST> statement) {
     statement_list.push_back(statement);
 }
 
@@ -33,7 +33,7 @@ BinOpNode::BinOpNode(std::shared_ptr<AST> init_left, Token init_op, std::shared_
  * Accept methods
 **/
 
-void BlockNode::accept(Visitor &v) {
+void CompoundNode::accept(Visitor &v) {
     v.visit(this);
 }
 
@@ -76,7 +76,7 @@ void Visitor::add_integer(std::string var_name, int value) {
     integer_map.insert(std::pair<std::string, int>(var_name, value));
 }
 
-void NodeVisitor::visit(BlockNode *node) {
+void NodeVisitor::visit(CompoundNode *node) {
     std::cout << "Visiting Block" << std::endl;
 
     for (auto it: node->get_statements()) {

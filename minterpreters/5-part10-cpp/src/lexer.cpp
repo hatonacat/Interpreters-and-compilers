@@ -2,6 +2,7 @@
 #include <regex>
 
 #include "lexer.h"
+#include "utils.h"
 
 // CONSTRUCTORS AND DESTRUCTORS
 
@@ -15,16 +16,19 @@ Lexer::Lexer(std::string user_code) {
         {R"(\*)", "MUL"},
         {R"(/)", "DIV"},
         {R"(=)", "EQUALS"},
-        {R"([A-Za-z][A-Za-z0-9]*)", "VARIABLE"},
+        {R"([A-Za-z][A-Za-z0-9_]*)", "VARIABLE"},
         {R"(\s+)", "WHITESPACE"},
         {R"(\()", "LPAREN"},
         {R"(\))", "RPAREN"},
         {R"(;)", "SEMI"},
+        {R"(\.)", "DOT"},
     };
     protected_terms = {
-        {"Begin", "BEGIN"},
-        {"End", "END"},
-        {"int", "TYPE"},
+        {"BEGIN", "BEGIN"},
+        {"END", "END"},
+        {"INT", "TYPE"},
+        {"PROGRAM", "PROGRAM"},
+        {"VAR", "VAR"},
     };
     current_token = get_next_token();
 }
@@ -89,6 +93,7 @@ Token Lexer::tokenise() {
                 token = tokenise();               
             }
             else if (expression.second == "VARIABLE") {
+                matching_phrase = upper(matching_phrase);
                 std::string protected_type = protected_check(matching_phrase);
                 if (protected_type == "Not protected") {
                     token = Token(expression.second, matching_phrase);                    

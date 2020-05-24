@@ -11,7 +11,7 @@ Parser::~Parser() {};
 
 std::shared_ptr<AST> Parser::parse() {
     Token token = lexer->get_current_token();
-    std::shared_ptr<AST> node = compound_statement();
+    std::shared_ptr<AST> node = program();
 
     return node;
 }
@@ -41,6 +41,36 @@ void Parser::eat(std::string token_type) {
 * GRAMMARS
 */
 
+std::shared_ptr<AST> Parser::program() {
+    /*
+     * PROGRAM VARIABLE SEMI BLOCK .
+    */
+    std::shared_ptr<AST> node;
+    eat("PROGRAM");
+    eat("VARIABLE");
+    eat("SEMI");
+    node = compound_statement();
+    eat("DOT");
+
+    return node;
+}
+
+std::shared_ptr<AST> Parser::block() {
+    /*
+     * DECLARATIONS COMPOUND_STATEMENT
+    */
+    std::shared_ptr<AST> node;
+
+    if (lexer->get_current_token().get_type() == "VAR") {
+        std::cout << "Declarations" << std::endl;
+        eat("VAR");
+    }
+
+    node = compound_statement();
+
+    return node;
+}
+
 std::shared_ptr<AST> Parser::compound_statement() {
     /*
      * BEGIN STATEMENT_LIST END
@@ -59,7 +89,7 @@ std::shared_ptr<AST> Parser::statement_list() {
     /*
      * STATEMENT*
     */
-    std::unique_ptr<BlockNode> node = std::make_unique<BlockNode>();
+    std::unique_ptr<CompoundNode> node = std::make_unique<CompoundNode>();
     
     node->add_statement( statement() );
     while (lexer->get_current_token().get_type() != "END") {
