@@ -8,9 +8,9 @@
 #define LEXER_H
 
 #include <map>
-#include <unordered_map>
 #include <string>
 #include <set>
+#include <unordered_map>
 
 #include "token.h"
 

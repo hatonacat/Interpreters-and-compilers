@@ -68,12 +68,16 @@ void EmptyNode::accept(Visitor &v) {
 /**
  * Visitor design pattern
 **/
-void Visitor::add_integer(Variable var) {
+void Visitor::add_integer(Variable<int> var) {
     integer_map.insert(std::pair<std::string, int>(var.get_name(), var.get_value()));
 }
 
 void Visitor::add_integer(std::string var_name, int value) {
     integer_map.insert(std::pair<std::string, int>(var_name, value));
+}
+
+void Visitor::add_string(std::string var_name, std::string value) {
+    string_map.insert(std::pair<std::string, std::string>(var_name, value));
 }
 
 void NodeVisitor::visit(CompoundNode *node) {
@@ -99,7 +103,7 @@ void NodeVisitor::visit(AssignNode *node) {
     value_node->accept(*this);
     int value = get_running_integer();
 
-    add_integer(Variable(type, name, value));
+    add_integer(Variable<int>(type, name, value));
 };
 
 void NodeVisitor::visit(TypeNode *node) {
@@ -170,8 +174,8 @@ void NodeVisitor::visit(EmptyNode *node) {
     std::cout << "Visiting empty" << std::endl;
 };
 
-Variable::Variable(std::string init_type, std::string init_name, int init_value) {
-    type = init_type;
-    name = init_name;
-    value = init_value;
-}
+// Variable::Variable(std::string init_type, std::string init_name, int init_value) {
+//     type = init_type;
+//     name = init_name;
+//     value = init_value;
+// }

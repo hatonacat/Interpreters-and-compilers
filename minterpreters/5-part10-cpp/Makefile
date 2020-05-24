@@ -9,7 +9,7 @@ vpath %.cpp $(SRC_DIR)
 vpath %.h $(INC_DIR)
 vpath %.o $(OBJ_DIR)
 
-SRC_FILES = ast_visitor.cpp interpreter.cpp lexer.cpp parser.cpp token.cpp main.cpp
+SRC_FILES = ast_visitor.cpp interpreter.cpp lexer.cpp parser.cpp token.cpp main.cpp utils.cpp
 OBJ_FILES = $(SRC_FILES:%.cpp=%.o)
 
 EXECUTABLE_NAME = main
@@ -28,7 +28,7 @@ main.o: main.cpp interpreter.h lexer.h parser.h ast_visitor.h utils.h | $(OBJ_DI
 ast_visitor.o: ast_visitor.cpp token.h | $(OBJ_DIR)
 	$(CC) -c $(SRC_DIR)/ast_visitor.cpp -o $(OBJ_DIR)/$@ $(CFLAGS)
 
-interpreter.o: interpreter.cpp ast_visitor.h parser.h token.h | $(OBJ_DIR)
+interpreter.o: interpreter.cpp ast_visitor.h parser.h token.h utils.h | $(OBJ_DIR)
 	$(CC) -c $(SRC_DIR)/interpreter.cpp -o $(OBJ_DIR)/$@ $(CFLAGS)	
 
 lexer.o: lexer.cpp token.h utils.h | $(OBJ_DIR)

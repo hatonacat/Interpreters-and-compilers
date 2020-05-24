@@ -2,7 +2,12 @@
  * General utility functions used in the project
  */
 
+#ifndef UTILS_H
+#define UTILS_H
+
 #include <string>
+#include <map>
+#include <iostream>
 
 template <typename T, typename U>
 void print_map(std::map<T, U> &map) {
@@ -11,9 +16,6 @@ void print_map(std::map<T, U> &map) {
     }
 };
 
-std::string upper(std::string str) {
-    for (int i = 0; i < str.length(); ++i) {
-        str[i] = std::toupper(str[i]);
-    };
-    return str;
-}
+std::string upper(std::string str);
+
+#endif

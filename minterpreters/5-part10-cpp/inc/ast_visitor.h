@@ -14,20 +14,57 @@
 /**
  * AST Data structures
 **/
+// class Variable {
+//     public:
+//         Variable(std::string init_type, std::string init_name, int init_value);
+//         ~Variable() {};
+
+//         std::string get_type() {return type;};
+//         std::string get_name() {return name;};
+//         int get_value() {return value;};
+    
+//     private:
+//         std::string type;
+//         std::string name;
+//         int value;
+// };
+
+template<typename T>
 class Variable {
     public:
-        Variable(std::string init_type, std::string init_name, int init_value);
+        Variable() {};
+        Variable(std::string init_type, std::string init_name, T init_value);
         ~Variable() {};
-
+        
         std::string get_type() {return type;};
+        void set_type(std::string init_type) {type = init_type;};
         std::string get_name() {return name;};
-        int get_value() {return value;};
+        void set_name(std::string init_name) {name = init_name;};
+        T get_value();
+        void set_value(T init_value);
     
     private:
         std::string type;
         std::string name;
-        int value;
+        T value;
 };
+
+template<typename T>
+Variable<T>::Variable(std::string init_type, std::string init_name, T init_value) {
+    type = init_type;
+    name = init_name;
+    value = init_value;
+}
+
+template<typename T>
+T Variable<T>::get_value() {
+    return value;
+}
+
+template<typename T>
+void Variable<T>::set_value(T init_value) {
+    value = init_value;
+}
 
 /**
  * AST NODES
@@ -184,8 +221,10 @@ class Visitor {
         void set_running_var(std::string var) {running_var = var;};
         std::string get_running_var() {return running_var;};
 
-        void add_integer(Variable new_var);
+        void add_integer(Variable<int> new_var);
         void add_integer(std::string var_name, int value);
+
+        void add_string(std::string var_name, std::string value);
 };  
 
 class NodeVisitor : public Visitor {
