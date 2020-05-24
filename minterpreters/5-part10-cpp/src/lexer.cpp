@@ -19,11 +19,12 @@ Lexer::Lexer(std::string user_code) {
         {R"(\s+)", "WHITESPACE"},
         {R"(\()", "LPAREN"},
         {R"(\))", "RPAREN"},
+        {R"(;)", "SEMI"},
     };
     protected_terms = {
         {"Begin", "BEGIN"},
         {"End", "END"},
-        {"int", "INT_TYPE"},
+        {"int", "TYPE"},
     };
     current_token = get_next_token();
 }

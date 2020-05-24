@@ -4,6 +4,10 @@
  * AST structure and nodes
 **/
 
+void BlockNode::add_statement(std::shared_ptr<AST> statement) {
+    statement_list.push_back(statement);
+}
+
 AssignNode::AssignNode(std::shared_ptr<AST> init_type, std::shared_ptr<AST> init_variable, std::shared_ptr<AST> init_value) : 
         type_node(init_type), 
         variable_node(init_variable), 
@@ -29,6 +33,10 @@ BinOpNode::BinOpNode(std::shared_ptr<AST> init_left, Token init_op, std::shared_
  * Accept methods
 **/
 
+void BlockNode::accept(Visitor &v) {
+    v.visit(this);
+}
+
 void AssignNode::accept(Visitor &v) {
     v.visit(this);
 }
@@ -53,6 +61,10 @@ void RealNode::accept(Visitor &v) {
     v.visit(this);
 }
 
+void EmptyNode::accept(Visitor &v) {
+    v.visit(this);
+}
+
 /**
  * Visitor design pattern
 **/
@@ -64,12 +76,13 @@ void Visitor::add_integer(std::string var_name, int value) {
     integer_map.insert(std::pair<std::string, int>(var_name, value));
 }
 
-// void Visitor::print_integers() {
-//     std::cout << "Printing map:" << std::endl;
-//     for (auto it: integers) {
-//         std::cout << it.first << " = " << it.second << std::endl;
-//     }
-// }
+void NodeVisitor::visit(BlockNode *node) {
+    std::cout << "Visiting Block" << std::endl;
+
+    for (auto it: node->get_statements()) {
+        it->accept(*this);
+    }
+};
 
 void NodeVisitor::visit(AssignNode *node) {
     std::cout << "Visiting assign" << std::endl;
@@ -153,7 +166,9 @@ void NodeVisitor::visit(RealNode *node) {
     //return value;
 };
 
-void NodeVisitor::visit(EmptyNode *node) {};
+void NodeVisitor::visit(EmptyNode *node) {
+    std::cout << "Visiting empty" << std::endl;
+};
 
 Variable::Variable(std::string init_type, std::string init_name, int init_value) {
     type = init_type;

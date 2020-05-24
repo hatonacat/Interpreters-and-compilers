@@ -59,22 +59,28 @@ std::shared_ptr<AST> Parser::statement_list() {
     /*
      * STATEMENT*
     */
-    std::shared_ptr<AST> node = statement();
+    std::unique_ptr<BlockNode> node = std::make_unique<BlockNode>();
+    
+    node->add_statement( statement() );
+    while (lexer->get_current_token().get_type() != "END") {
+        node->add_statement( statement() );
+    }
 
     return node;
-
-
 }
 
 std::shared_ptr<AST> Parser::statement() {
     /*
-     * COMPOUND STATEMENT | ASSIGN_OP | EMPTY
+     * (COMPOUND STATEMENT | ASSIGN_OP | EMPTY) SEMI
     */
     std::shared_ptr<AST> node;
     std::string node_type = lexer->get_current_token().get_type();
-    if (node_type == "INT_TYPE") {
-        node = assign_op();
-    }
+
+    if (node_type == "TYPE") {node = assign_op();}
+    else if (node_type == "BEGIN") {node = compound_statement();}
+    else {node = empty();}
+
+    eat("SEMI");
 
     return node;
 }
@@ -86,13 +92,12 @@ std::shared_ptr<AST> Parser::assign_op() {
     // TYPE
     Token type_token = lexer->get_current_token();
     std::shared_ptr<AST> type_node = std::make_shared<TypeNode>(type_token.get_type());
-    eat("INT_TYPE");
+    eat("TYPE");
 
     // VARIABLE
     Token var_token = lexer->get_current_token();
     std::shared_ptr<AST> var_node = std::make_shared<VariableNode>(var_token);
     eat("VARIABLE");
-
     eat("EQUALS");
 
     // EXPR
@@ -110,12 +115,8 @@ std::shared_ptr<AST> Parser::expr() {
 
     Token op = lexer->get_current_token();
     while((op.get_type() == "PLUS") || op.get_type() == "MINUS" ) {
-        if (op.get_type()=="PLUS") {
-            eat("PLUS");
-        }
-        else {
-            eat("MINUS");
-        }
+        if (op.get_type()=="PLUS") { eat("PLUS"); }
+        else { eat("MINUS"); }
 
         node = std::make_shared<BinOpNode>(BinOpNode(node, op, term()));
         op = lexer->get_current_token();
@@ -175,3 +176,8 @@ std::shared_ptr<AST> Parser::factor() {
     return node;   
 }
 
+std::shared_ptr<AST> Parser::empty() {
+    std::shared_ptr<EmptyNode> node = std::make_shared<EmptyNode>(EmptyNode());
+
+    return node;
+}

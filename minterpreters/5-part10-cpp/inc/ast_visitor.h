@@ -7,6 +7,7 @@
 
 #include <map>
 #include <memory>
+#include <vector>
 
 #include "token.h"
 
@@ -35,6 +36,20 @@ class Variable {
 class AST {
     public:
         virtual void accept(class Visitor &v) = 0;
+};
+
+class BlockNode: public AST {
+    public:
+        BlockNode() {};
+        ~BlockNode() {};
+
+        void accept(Visitor &v);
+
+        void add_statement(std::shared_ptr<AST> statement);
+        std::vector<std::shared_ptr<AST>> get_statements() {return statement_list;};
+
+    private:
+        std::vector<std::shared_ptr<AST>> statement_list;
 };
 
 class AssignNode: public AST {
@@ -150,6 +165,7 @@ class Visitor {
         std::string running_var;
 
     public:
+        virtual void visit(BlockNode *e)=0;
         virtual void visit(AssignNode *e)=0;
         virtual void visit(TypeNode *e)=0;
         virtual void visit(VariableNode *e)=0;
@@ -174,6 +190,7 @@ class Visitor {
 
 class NodeVisitor : public Visitor {
     private:
+        void visit(BlockNode *e);
         void visit(AssignNode *e);
         void visit(TypeNode *e);
         void visit(VariableNode *e);
