@@ -99,7 +99,7 @@ class BinOpNode : public AST {
         std::shared_ptr<AST> right;
 };
 
-class IntegerNode :public AST {
+class IntegerNode : public AST {
     public:
         IntegerNode() {};
         IntegerNode(int init_value) {value = init_value;};
@@ -114,7 +114,7 @@ class IntegerNode :public AST {
         int value;
 };
 
-class RealNode :public AST{
+class RealNode : public AST{
     public:
         RealNode() {};
         RealNode(float init_value) {value = init_value;};
@@ -129,6 +129,14 @@ class RealNode :public AST{
         float value;
 };
 
+class EmptyNode : public AST {
+    public:
+        EmptyNode() {};
+        ~EmptyNode() {};
+
+        void accept(Visitor &v);
+};
+
 /**
  * Visitor design pattern
 **/
@@ -138,6 +146,7 @@ class Visitor {
         std::map<std::string, float> float_map;
         std::map<std::string, std::string> string_map;
         int running_integer;
+        float running_float;
         std::string running_var;
 
     public:
@@ -147,6 +156,7 @@ class Visitor {
         virtual void visit(BinOpNode *e)=0;
         virtual void visit(IntegerNode *e)=0;
         virtual void visit(RealNode *e)=0;
+        virtual void visit(EmptyNode *e)=0;
 
         auto get_integer_map() {return &integer_map;};
         auto get_float_map() {return &float_map;};
@@ -170,6 +180,7 @@ class NodeVisitor : public Visitor {
         void visit(BinOpNode *e);
         void visit(IntegerNode *e);
         void visit(RealNode *e);
+        void visit(EmptyNode *e);
 };
 
 #endif

@@ -115,14 +115,26 @@ void NodeVisitor::visit(BinOpNode *node) {
     int right = get_running_integer();
 
     int total;
-    if (node->get_op().get_type() == "MUL") {
-        total = left*right;
+    std::string op_type = node->get_op().get_type();
+    if (op_type == "MUL") {
+        total = left * right;
+    }
+    else if (op_type == "DIV") {
+        total = left / right;
+    }
+    else if (op_type == "PLUS") {
+        total = left + right;
+    }
+    else if (op_type == "MINUS") {
+        total = left - right;
     }
     else {
         std::cout << "No valid binary operation found" << std::endl;
     }
 
     set_running_integer(total);
+    std::cout << "left: " << left << " right: " << right << " op: " << op_type << 
+                 " Running int: " << get_running_integer() << std::endl;
 };
 
 void NodeVisitor::visit(IntegerNode *node) {
@@ -140,6 +152,8 @@ void NodeVisitor::visit(RealNode *node) {
 
     //return value;
 };
+
+void NodeVisitor::visit(EmptyNode *node) {};
 
 Variable::Variable(std::string init_type, std::string init_name, int init_value) {
     type = init_type;

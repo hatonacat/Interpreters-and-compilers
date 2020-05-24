@@ -43,37 +43,85 @@ void Parser::eat(std::string token_type) {
 
 std::shared_ptr<AST> Parser::compound_statement() {
     /*
-     * BEGIN ASSIGN_OP END
+     * BEGIN STATEMENT_LIST END
     */
     eat("BEGIN");
 
     std::shared_ptr<AST> node;
-    node = assign_op();
+    node = statement_list();
 
     eat("END");
     return node;
 
 }
 
+std::shared_ptr<AST> Parser::statement_list() {
+    /*
+     * STATEMENT*
+    */
+    std::shared_ptr<AST> node = statement();
+
+    return node;
+
+
+}
+
+std::shared_ptr<AST> Parser::statement() {
+    /*
+     * COMPOUND STATEMENT | ASSIGN_OP | EMPTY
+    */
+    std::shared_ptr<AST> node;
+    std::string node_type = lexer->get_current_token().get_type();
+    if (node_type == "INT_TYPE") {
+        node = assign_op();
+    }
+
+    return node;
+}
+
 std::shared_ptr<AST> Parser::assign_op() {
     /*
     * TYPE VARIABLE EQUALS EXPR
     */
+    // TYPE
     Token type_token = lexer->get_current_token();
     std::shared_ptr<AST> type_node = std::make_shared<TypeNode>(type_token.get_type());
     eat("INT_TYPE");
 
+    // VARIABLE
     Token var_token = lexer->get_current_token();
     std::shared_ptr<AST> var_node = std::make_shared<VariableNode>(var_token);
     eat("VARIABLE");
 
     eat("EQUALS");
 
-    std::shared_ptr<AST> value_node (term());
+    // EXPR
+    std::shared_ptr<AST> value_node (expr());
 
     std::shared_ptr<AST> assign_node = std::make_shared<AssignNode>(type_node, var_node, value_node);
-
     return assign_node;
+}
+
+std::shared_ptr<AST> Parser::expr() {
+    /*
+    * TERM ((PLUS|MINUS) TERM)*
+    */   
+    std::shared_ptr<AST> node (term());
+
+    Token op = lexer->get_current_token();
+    while((op.get_type() == "PLUS") || op.get_type() == "MINUS" ) {
+        if (op.get_type()=="PLUS") {
+            eat("PLUS");
+        }
+        else {
+            eat("MINUS");
+        }
+
+        node = std::make_shared<BinOpNode>(BinOpNode(node, op, term()));
+        op = lexer->get_current_token();
+    }
+
+    return node;
 }
 
 std::shared_ptr<AST> Parser::term() {
@@ -83,16 +131,19 @@ std::shared_ptr<AST> Parser::term() {
     std::shared_ptr<AST> node (factor());
 
     Token op = lexer->get_current_token();
-    if (op.get_type()=="MUL") {
-        eat("MUL");
-    }
-    else {
-        eat("DIV");
+    while((op.get_type() == "MUL") || op.get_type() == "DIV" ) {
+        if (op.get_type()=="MUL") {
+            eat("MUL");
+        }
+        else {
+            eat("DIV");
+        }
+
+        node = std::make_shared<BinOpNode>(BinOpNode(node, op, factor()));
+        op = lexer->get_current_token();
     }
 
-    std::shared_ptr<AST> binop_node = std::make_shared<BinOpNode>(BinOpNode(node, op, factor()));
-
-    return binop_node;
+    return node;
 }
 
 std::shared_ptr<AST> Parser::factor() {
@@ -103,7 +154,6 @@ std::shared_ptr<AST> Parser::factor() {
     std::shared_ptr<AST> node;
 
     if (token.get_type() == "INTEGER") {
-        std::cout << "Token is: " << token << std::endl;
         int token_value = std::stoi(token.get_value());
         node = std::make_shared<IntegerNode>(IntegerNode(token_value));
         eat("INTEGER");
@@ -112,6 +162,11 @@ std::shared_ptr<AST> Parser::factor() {
         float token_value = std::stof(token.get_value());
         node = std::make_shared<RealNode>(RealNode(token_value));
         eat("REAL");
+    }
+    else if (token.get_type() == "LPAREN") {
+        eat("LPAREN");
+        node = expr();
+        eat("RPAREN");
     }
     else {
         parsing_error("No matching options found in 'factor' grammar");

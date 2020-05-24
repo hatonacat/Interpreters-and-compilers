@@ -29,9 +29,13 @@ class Parser {
         */
         void eat(std::string);
         std::shared_ptr<AST> compound_statement();
+        std::shared_ptr<AST> statement_list();
+        std::shared_ptr<AST> statement();
         std::shared_ptr<AST> assign_op();
+        std::shared_ptr<AST> expr();
         std::shared_ptr<AST> term();
         std::shared_ptr<AST> factor();
+        std::shared_ptr<AST> empty();
 };
 
 #endif
