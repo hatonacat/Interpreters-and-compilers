@@ -535,9 +535,10 @@ class Visitor:
 
 
 class Symbol:
-    def __init__(self, name, type=None):
+    def __init__(self, name, type=None, scope=None):
         self.name = name
         self.type = type
+        self.scope = scope
 
 class BuiltInTypeSymbol(Symbol):
     def __init__(self, name):
@@ -617,17 +618,21 @@ class ScopedSymbolTable:
     def insert(self, symbol):
         #print(f"insert: {symbol}, Scope name: {self.scope_name}")
         self._symbols[symbol.name] = symbol
+        symbol.scope = self
     
-    def lookup(self, symbol):
+    def lookup(self, name, current_scope_only=False):
         #print(f"Lookup: {symbol}, Scope name: {self.scope_name}")
-        result = self._symbols.get(symbol)
+        symbol = self._symbols.get(name)
 
-        if result is not None:
+        if symbol is not None:
             return symbol
             
+        if current_scope_only:
+            return None
+
         #print(f"Symbol {symbol} not in current scope")
         if self.enclosing_scope is not None:
-            return self.enclosing_scope.lookup(symbol)
+            return self.enclosing_scope.lookup(name)
 
 
 ###############################################################################
@@ -753,9 +758,10 @@ class SemanticAnalyzer(Visitor):
 
 class SourceToSourceCompiler(Visitor):
     def __init__(self):
-        self.scope = ScopedSymbolTable(scope_name='Global', scope_level=1)
+        self.scope = ScopedSymbolTable(scope_name='Main', scope_level=0)
         self.current_scope = None
-        self.s = ""
+        self.s = []
+        self.code = ""
 
     def visit_AssignNode(self, node):
         var_name = node.name_node.name
@@ -763,7 +769,10 @@ class SourceToSourceCompiler(Visitor):
         if var_symbol is None:
             raise NameError(var_name)
 
-        self.visit(node.value_node)
+        left = self.visit(node.name_node)
+        right = self.visit(node.value_node)
+
+        self.s.append(f"{self.indent()}{left} := {right}")
 
     def visit_BlockNode(self, node):
         for declaration in node.declarations:
@@ -771,12 +780,16 @@ class SourceToSourceCompiler(Visitor):
         self.visit(node.compound_statements)
 
     def visit_BinOpNode(self, node):
-        self.visit(node.left)
-        self.visit(node.right)
+        left = self.visit(node.left)
+        right = self.visit(node.right)
+
+        return f"{left} {node.op.value} {right}"
 
     def visit_CompoundNode(self, node):
+        self.s.append(f"\n{self.indent(-1)}begin")
         for child in node.statement_list:
             self.visit(child)
+        self.s.append(f"{self.indent(-1)}end")
 
     def visit_IntegerNode(self, node):
         return node.type
@@ -792,6 +805,8 @@ class SourceToSourceCompiler(Visitor):
         proc_symbol = ProcedureSymbol(proc_name)
         self.current_scope.insert(proc_symbol)
 
+        proc_string = f"{self.indent()}procedure {proc_name}"
+
         print("ENTER scope:", proc_name)
         procedure_scope = ScopedSymbolTable(
             scope_name = proc_name,
@@ -800,15 +815,22 @@ class SourceToSourceCompiler(Visitor):
         )
         self.current_scope = procedure_scope
 
+        param_list = []
         for param in node.params:
             param_type = self.current_scope.lookup(param.type_node.type)
             param_name = param.var_node.name
             var_symbol = VarSymbol(param_name, param_type)
             self.current_scope.insert(var_symbol)
             proc_symbol.params.append(var_symbol)
+            param_list.append(f"{param_name}{self.level()} : {param_type}")
+
+        parameters_string = " ".join(param_list)
+        self.s.append(
+             f"{proc_string}({parameters_string});"
+        )
 
         self.visit(node.block)
-
+        self.s[-1] += "; {{END OF {name}}}".format(name=proc_name)
         #print(procedure_scope)
         self.current_scope = self.current_scope.enclosing_scope
         print("LEAVE scope: ", proc_name)
@@ -816,6 +838,7 @@ class SourceToSourceCompiler(Visitor):
 
     def visit_ProgramNode(self, node):
         print("ENTER scope: global")
+        self.s.append(f"Program {node.name}{self.level()};")
         global_scope = ScopedSymbolTable(
             scope_name = 'Global',
             scope_level = 1,
@@ -824,8 +847,9 @@ class SourceToSourceCompiler(Visitor):
         self.current_scope = global_scope
 
         self.visit(node.block)
-        #print(global_scope)
         self.enclosing_scope = self.current_scope.enclosing_scope
+        self.s[-1] += ". {{END OF {name}}}".format(name=node.name)
+        self.code = "\n".join(self.s)
         print("LEAVE scope: global")
 
     def visit_RealNode(self, node):
@@ -846,8 +870,12 @@ class SourceToSourceCompiler(Visitor):
         symbol_type = self.current_scope.lookup(var_type)
         var_symbol = (VarSymbol(var_name, symbol_type))
 
-        # if self.current_scope.lookup(var_name) is not None:
-        #     raise Exception(f"Duplicate symbol entry for '{var_name}'")
+        self.s.append(
+            f"{self.indent()}var {var_name}{self.level()} : {var_type};"
+        )
+
+        if self.current_scope.lookup(var_name, current_scope_only=True) is not None:
+            raise Exception(f"Duplicate symbol entry for '{var_name}'")
 
         self.current_scope.insert(var_symbol)
 
@@ -858,6 +886,28 @@ class SourceToSourceCompiler(Visitor):
         if var_symbol is None:
             raise Exception(f"Symbol (identifier) not found: '{var_name}'")
 
+        var_level = var_symbol.scope.scope_level
+
+        return "<{var_name}{scope}:{symbol}>".format(
+            var_name = var_name,
+            scope = var_level,
+            symbol = var_symbol.type
+        )
+
+
+    def indent(self, adjuster=0):
+        '''
+        Helper printer function, returns required tab number for given level
+        '''
+        return (self.current_scope.scope_level + adjuster) * "    "
+
+    def level(self):
+        '''
+        Helper function, returns current level
+        '''
+        if self.current_scope == None:
+            return 0
+        return self.current_scope.scope_level
 
 ###############################################################################
 #                                                                             #
@@ -945,7 +995,7 @@ program Main;
 
    procedure Alpha(a : integer);
       var y : integer;
-      z : real;
+
    begin
       x := a + x + y;
    end;
@@ -967,7 +1017,7 @@ end.  { Main }
 
     comp = SourceToSourceCompiler()
     comp.visit(tree_head)
-    print(comp.s)
+    print(comp.code)
 
     # interpreter = Interpreter(tree_head)
     # interpreter.interpret()
