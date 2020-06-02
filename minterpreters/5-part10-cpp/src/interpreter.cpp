@@ -19,6 +19,6 @@ void Interpreter::interpret() {
     std::cout << "Integers: " << std::endl;
     print_map(*top_visitor.get_integer_map());    
     std::cout << "\nFloats: " << std::endl;
-    print_map(*top_visitor.get_float_map());   
+    print_map(*top_visitor.get_real_map());   
 }
 

@@ -30,6 +30,9 @@ class Parser {
         void eat(std::string);
         std::shared_ptr<AST> program();
         std::shared_ptr<AST> block();
+        std::shared_ptr<AST> declarations();
+        std::shared_ptr<AST> variable_declarations();
+        std::shared_ptr<AST> type_spec();
         std::shared_ptr<AST> compound_statement();
         std::shared_ptr<AST> statement_list();
         std::shared_ptr<AST> statement();

@@ -10,7 +10,8 @@ Lexer::Lexer(std::string user_code) {
     set_code(user_code);
     pos = 0;
     regex_expressions = {
-        {R"(\d+)", "INTEGER"},
+        {R"(\d+(?!\s*\.))", "INTEGER"},
+        {R"(\d+\.\d*)", "REAL"},
         {R"(\+)", "PLUS"},
         {R"(-)", "MINUS"},
         {R"(\*)", "MUL"},
@@ -22,10 +23,13 @@ Lexer::Lexer(std::string user_code) {
         {R"(\))", "RPAREN"},
         {R"(;)", "SEMI"},
         {R"(\.)", "DOT"},
+        {R"(\,)", "COMMA"},
+        {R"(\:)", "COLON"},
     };
     protected_terms = {
         {"BEGIN", "BEGIN"},
         {"END", "END"},
+        {"REAL", "TYPE"},
         {"INT", "TYPE"},
         {"PROGRAM", "PROGRAM"},
         {"VAR", "VAR"},

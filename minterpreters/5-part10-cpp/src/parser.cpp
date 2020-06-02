@@ -49,7 +49,7 @@ std::shared_ptr<AST> Parser::program() {
     eat("PROGRAM");
     eat("VARIABLE");
     eat("SEMI");
-    node = compound_statement();
+    node = block();
     eat("DOT");
 
     return node;
@@ -59,17 +59,67 @@ std::shared_ptr<AST> Parser::block() {
     /*
      * DECLARATIONS COMPOUND_STATEMENT
     */
-    std::shared_ptr<AST> node;
+    std::shared_ptr<AST> block_node;
+    std::shared_ptr<AST> declaration_node;
+    std::shared_ptr<AST> cs_node;
 
     if (lexer->get_current_token().get_type() == "VAR") {
-        std::cout << "Declarations" << std::endl;
-        eat("VAR");
+        declaration_node = declarations();
     }
 
-    node = compound_statement();
+    cs_node = compound_statement();
+
+    block_node = std::make_shared<BlockNode> (BlockNode(declaration_node, cs_node));
+    return block_node;
+}
+
+std::shared_ptr<AST> Parser::declarations() {
+    /*
+     * VAR (variable_declarations SEMI)+ | empty
+    */
+    std::shared_ptr<AST> node;
+    eat("VAR");
+
+    if (lexer->get_current_token().get_type() != "VARIABLE") {
+        node = empty(); 
+    }
+
+    while (lexer->get_current_token().get_type() == "VARIABLE") {
+        variable_declarations();
+        eat("SEMI");
+    }
 
     return node;
 }
+
+std::shared_ptr<AST> Parser::variable_declarations() {
+    /*
+     * ID (COMMA ID)* COLON type_spec
+    */
+    std::shared_ptr<AST> node;
+    eat("VARIABLE");
+
+    while (lexer->get_current_token().get_type() == "COMMA") {
+        eat("COMMA");
+        eat("VARIABLE");
+    }
+
+    eat("COLON");
+    type_spec();
+
+    return node;
+}
+
+std::shared_ptr<AST> Parser::type_spec() {
+    /*
+     * INTEGER | REAL
+    */    
+    std::shared_ptr<AST> node;
+    eat("TYPE");
+
+    return node;
+}
+
 
 std::shared_ptr<AST> Parser::compound_statement() {
     /*
@@ -121,7 +171,7 @@ std::shared_ptr<AST> Parser::assign_op() {
     */
     // TYPE
     Token type_token = lexer->get_current_token();
-    std::shared_ptr<AST> type_node = std::make_shared<TypeNode>(type_token.get_type());
+    std::shared_ptr<AST> type_node = std::make_shared<TypeNode>(type_token.get_type(), type_token.get_value());
     eat("TYPE");
 
     // VARIABLE
@@ -179,12 +229,22 @@ std::shared_ptr<AST> Parser::term() {
 
 std::shared_ptr<AST> Parser::factor() {
     /*
-    * INTEGER | REAL | LPAREN EXPR RPAREN
+    * (UNARY + | UNARY -)factor | INTEGER | REAL | LPAREN EXPR RPAREN
     */
     Token token = lexer->get_current_token();
     std::shared_ptr<AST> node;
 
-    if (token.get_type() == "INTEGER") {
+    if (token.get_type() == "PLUS") {
+        eat("PLUS");
+        node = factor();
+        node = std::make_shared<UnaryNode>(UnaryNode("PLUS", node));
+    } 
+    else if (token.get_type() == "MINUS") {
+        eat("MINUS");
+        node = factor();
+        node = std::make_shared<UnaryNode>(UnaryNode("MINUS", node));
+    } 
+    else if (token.get_type() == "INTEGER") {
         int token_value = std::stoi(token.get_value());
         node = std::make_shared<IntegerNode>(IntegerNode(token_value));
         eat("INTEGER");

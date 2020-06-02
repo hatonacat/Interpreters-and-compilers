@@ -8,11 +8,12 @@
 int main() {
     std::string user_code = R"(
         Program matts_program;
+        Var
+            a : int;
+        
         Begin
-            Begin
-                int a = (2+3)*4;
-                int b = 17*23+2;
-            End;
+            real a = (2.1*4.2)/2.0;
+            int b = --3*-2;
         End.)";
     std::cout << "Input code: \"" << user_code << "\"\n" << std::endl;
 

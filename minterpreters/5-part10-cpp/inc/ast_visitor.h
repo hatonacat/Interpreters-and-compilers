@@ -10,25 +10,11 @@
 #include <vector>
 
 #include "token.h"
+#include "utils.h"
 
 /**
  * AST Data structures
 **/
-// class Variable {
-//     public:
-//         Variable(std::string init_type, std::string init_name, int init_value);
-//         ~Variable() {};
-
-//         std::string get_type() {return type;};
-//         std::string get_name() {return name;};
-//         int get_value() {return value;};
-    
-//     private:
-//         std::string type;
-//         std::string name;
-//         int value;
-// };
-
 template<typename T>
 class Variable {
     public:
@@ -75,6 +61,45 @@ class AST {
         virtual void accept(class Visitor &v) = 0;
 };
 
+class BlockNode : public AST {
+    public:
+        BlockNode() {};
+        BlockNode(std::shared_ptr<AST> declaration_node, std::shared_ptr<AST> cs_statements);
+        ~BlockNode() {};
+
+        void accept(Visitor &v);
+
+        std::shared_ptr<AST> get_declarations() {return declarations;}
+        void set_declarations(std::shared_ptr<AST> new_declarations) {
+            declarations = new_declarations;
+        }
+
+        std::shared_ptr<AST> get_compound_statements() {return compounds_statements;}
+        void set_compound_statemetns(std::shared_ptr<AST> new_compound_statements) {
+            compounds_statements = new_compound_statements;
+        }
+
+    private:
+        std::shared_ptr<AST> declarations;
+        std::shared_ptr<AST> compounds_statements;
+};
+
+class DeclarationNode : public AST {
+    public:
+        DeclarationNode() {};
+        ~DeclarationNode() {};
+
+        void accept(Visitor &v);
+
+        std::vector<std::pair<std::string, std::string>> get_declarations();
+        void add_declartion(std::pair<std::string, std::string>) {};
+
+    private:
+        std::vector<std::pair<std::string, std::string>> declarations;
+};
+
+
+
 class CompoundNode: public AST {
     public:
         CompoundNode() {};
@@ -109,15 +134,17 @@ class AssignNode: public AST {
 class TypeNode: public AST {
     public:
         TypeNode() {};
-        TypeNode(std::string init_type);
+        TypeNode(std::string init_type, std::string init_value);
         ~TypeNode() {};
 
         void accept(Visitor &v);
 
-        std::string get_type() {return type;};
+        std::string get_type() {return type;}
+        std::string get_value() {return value;}
 
     private:
         std::string type;
+        std::string value;
 };
 
 class VariableNode: public AST {
@@ -181,6 +208,26 @@ class RealNode : public AST{
         float value;
 };
 
+class UnaryNode : public AST{
+    public:
+        UnaryNode() {};
+        UnaryNode(std::string init_type, std::shared_ptr<AST> init_node) {type = init_type; node = init_node;};
+        ~UnaryNode() {};
+
+        void accept(Visitor &v);
+
+        std::shared_ptr<AST> get_node() {return node;}
+        void set_node(std::shared_ptr<AST> init_node) {node = init_node;}
+
+        std::string get_type() {return type;}
+        void set_type(std::string new_type) {type = new_type;}
+
+    private:
+        std::shared_ptr<AST> node;
+        std::string type;
+
+};
+
 class EmptyNode : public AST {
     public:
         EmptyNode() {};
@@ -195,13 +242,17 @@ class EmptyNode : public AST {
 class Visitor {
     private:
         std::map<std::string, int> integer_map;
-        std::map<std::string, float> float_map;
+        std::map<std::string, float> real_map;
         std::map<std::string, std::string> string_map;
+        std::string running_type;
         int running_integer;
         float running_float;
         std::string running_var;
+        Token running_token;
 
     public:
+        virtual void visit(BlockNode *e)=0;
+        virtual void visit(DeclarationNode *e)=0;
         virtual void visit(CompoundNode *e)=0;
         virtual void visit(AssignNode *e)=0;
         virtual void visit(TypeNode *e)=0;
@@ -209,26 +260,39 @@ class Visitor {
         virtual void visit(BinOpNode *e)=0;
         virtual void visit(IntegerNode *e)=0;
         virtual void visit(RealNode *e)=0;
+        virtual void visit(UnaryNode *e)=0;   
         virtual void visit(EmptyNode *e)=0;
 
+        void add_integer(Variable<int> new_var);
+        void add_integer(std::string var_name, int value);
+        void add_real(Variable<float> new_var);
+        void add_real(std::string var_name, float value);
+        void add_string(std::string var_name, std::string value);
+
         auto get_integer_map() {return &integer_map;};
-        auto get_float_map() {return &float_map;};
+        auto get_real_map() {return &real_map;};
         auto get_string_map() {return &string_map;};
+
+        void set_running_float(float value) {running_float = value;};
+        float get_running_float() {return running_float;};
 
         void set_running_integer(int value) {running_integer = value;};
         int get_running_integer() {return running_integer;};
 
+        void set_running_token(Token token) {running_token=token;};
+        Token get_running_token() {return running_token;};
+
+        void set_running_type(std::string type) {running_type=type;};
+        std::string get_running_type() {return running_type;};
+
         void set_running_var(std::string var) {running_var = var;};
         std::string get_running_var() {return running_var;};
-
-        void add_integer(Variable<int> new_var);
-        void add_integer(std::string var_name, int value);
-
-        void add_string(std::string var_name, std::string value);
 };  
 
 class NodeVisitor : public Visitor {
     private:
+        void visit(BlockNode *e);
+        void visit(DeclarationNode *e);
         void visit(CompoundNode *e);
         void visit(AssignNode *e);
         void visit(TypeNode *e);
@@ -236,6 +300,7 @@ class NodeVisitor : public Visitor {
         void visit(BinOpNode *e);
         void visit(IntegerNode *e);
         void visit(RealNode *e);
+        void visit(UnaryNode *e);        
         void visit(EmptyNode *e);
 };
 

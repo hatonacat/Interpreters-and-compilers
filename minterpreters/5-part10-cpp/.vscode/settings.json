@@ -55,6 +55,7 @@
         "cinttypes": "cpp",
         "typeinfo": "cpp",
         "regex": "cpp",
-        "list": "cpp"
+        "list": "cpp",
+        "numeric": "cpp"
     }
 }
